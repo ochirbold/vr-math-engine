@@ -242,3 +242,27 @@ def test_integration_job_http(stack):
     assert [o['integral'] for o in result['outputs']] == [8,-8]
     assert worker.run_once()
     assert data.call('GET', '/v1/writebacks/' + job['job_id'])['outputs'] == result['outputs']
+
+@pytest.mark.parametrize('name', ['calculation','linear_program','mixed_integer_program',
+    'indexed_program','statistical_fit','scenario_program','numerical_integration'])
+def test_api_guide_examples_http(stack, name):
+    raw = json.loads((ROOT/'examples'/'api'/(name+'.json')).read_text())
+    result = stack['compute'].call('POST','/v1/executions',raw)
+    assert result['status'] == 'succeeded', result
+    if name == 'calculation':
+        assert result['outputs'] == [{'total':20}]
+    elif name == 'linear_program':
+        assert result['solution']['x'] == 4 and result['objective'] == 12
+    elif name == 'mixed_integer_program':
+        assert result['solution']['x'] == 2 and result['objective'] == 6
+    elif name == 'indexed_program':
+        assert result['solution']['quantity'] == [1,2] and result['objective'] == 3
+    elif name == 'scenario_program':
+        assert result['aggregates']['mean_value'] == 4
+    elif name == 'numerical_integration':
+        assert result['outputs'][0]['integral'] == pytest.approx(9)
+    else:
+        prediction = stack['compute'].call('POST','/v1/predictions',{
+            'artifact':result['fitted_artifact'], 'dataset':{'row_ids':['future'],'rows':[{}]}})
+        assert prediction['status'] == 'succeeded'
+        assert prediction['outputs'][0]['mean'] == pytest.approx(3,abs=1e-4)

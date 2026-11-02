@@ -1,0 +1,19 @@
+{
+  "model": {
+    "model_id": "api-numerical-integration",
+    "version": "1",
+    "kind": "numerical_integration",
+    "variable": "x",
+    "expression": "x**2",
+    "lower": "0",
+    "upper": "3"
+  },
+  "dataset": {
+    "row_ids": [
+      "one"
+    ],
+    "rows": [
+      {}
+    ]
+  }
+}

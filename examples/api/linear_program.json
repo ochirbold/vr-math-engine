@@ -1,0 +1,25 @@
+{
+  "model": {
+    "model_id": "api-linear-program",
+    "version": "1",
+    "kind": "linear_program",
+    "decisions": {
+      "x": {
+        "lower": 0,
+        "upper": 4
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "expression": "3*x"
+    }
+  },
+  "dataset": {
+    "row_ids": [
+      "one"
+    ],
+    "rows": [
+      {}
+    ]
+  }
+}

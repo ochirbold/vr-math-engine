@@ -1,0 +1,34 @@
+{
+  "model": {
+    "model_id": "api-scenario-program",
+    "version": "1",
+    "kind": "scenario_program",
+    "inputs": [
+      "value",
+      "weight"
+    ],
+    "weight_column": "weight",
+    "reductions": {
+      "mean_value": {
+        "expression": "value",
+        "operation": "expectation"
+      }
+    }
+  },
+  "dataset": {
+    "row_ids": [
+      "low",
+      "high"
+    ],
+    "rows": [
+      {
+        "value": 2,
+        "weight": 0.5
+      },
+      {
+        "value": 6,
+        "weight": 0.5
+      }
+    ]
+  }
+}

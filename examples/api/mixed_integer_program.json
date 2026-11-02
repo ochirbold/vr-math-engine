@@ -1,0 +1,29 @@
+{
+  "model": {
+    "model_id": "api-mixed-integer-program",
+    "version": "1",
+    "kind": "mixed_integer_program",
+    "decisions": {
+      "x": {
+        "domain": "integer",
+        "lower": 0,
+        "upper": 4
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "expression": "3*x"
+    },
+    "constraints": [
+      "x <= 2.7"
+    ]
+  },
+  "dataset": {
+    "row_ids": [
+      "one"
+    ],
+    "rows": [
+      {}
+    ]
+  }
+}

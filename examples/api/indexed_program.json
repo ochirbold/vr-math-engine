@@ -1,0 +1,70 @@
+{
+  "model": {
+    "model_id": "api-indexed-program",
+    "version": "1",
+    "kind": "indexed_program",
+    "axes": {
+      "t": [
+        0,
+        1
+      ]
+    },
+    "inputs": [
+      "t",
+      "need"
+    ],
+    "tables": {
+      "target": {
+        "axes": [
+          "t"
+        ],
+        "column": "need"
+      }
+    },
+    "decisions": {
+      "quantity": {
+        "axes": [
+          "t"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 5
+      }
+    },
+    "objective": {
+      "sense": "minimize",
+      "terms": [
+        {
+          "over": [
+            "t"
+          ],
+          "expression": "quantity[t]"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "over": [
+          "t"
+        ],
+        "expression": "quantity[t] >= target[t]"
+      }
+    ]
+  },
+  "dataset": {
+    "row_ids": [
+      "day0",
+      "day1"
+    ],
+    "rows": [
+      {
+        "t": 0,
+        "need": 1
+      },
+      {
+        "t": 1,
+        "need": 2
+      }
+    ]
+  }
+}

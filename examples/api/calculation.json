@@ -1,0 +1,29 @@
+{
+  "model": {
+    "model_id": "api-calculation",
+    "version": "1",
+    "kind": "calculation",
+    "inputs": [
+      "quantity",
+      "rate"
+    ],
+    "formulas": [
+      {
+        "target": "total",
+        "expression": "quantity*rate",
+        "stage": "row"
+      }
+    ]
+  },
+  "dataset": {
+    "row_ids": [
+      "one"
+    ],
+    "rows": [
+      {
+        "quantity": 2,
+        "rate": 10
+      }
+    ]
+  }
+}
