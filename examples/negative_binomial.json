@@ -1,0 +1,28 @@
+{
+  "model": {
+    "model_id": "censored-count", "version": "1", "kind": "statistical_fit",
+    "inputs": [],
+    "trainable": {
+      "intercept": {"initial": 1, "lower": -10, "upper": 10},
+      "alpha": {"initial": 0.5, "transform": "log", "lower": 0.001, "upper": 20}
+    },
+    "predictor": "intercept", "link": "log", "distribution": "negative_binomial",
+    "dispersion_parameter": "alpha",
+    "observation": {"kind": "right_censored", "response": "observed", "censored": "is_censored", "threshold": "limit"}
+  },
+  "dataset": {
+    "row_ids": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+    "rows": [
+      {"observed": 0, "is_censored": 0, "limit": 8},
+      {"observed": 1, "is_censored": 0, "limit": 8},
+      {"observed": 0, "is_censored": 0, "limit": 8},
+      {"observed": 2, "is_censored": 0, "limit": 8},
+      {"observed": 1, "is_censored": 0, "limit": 8},
+      {"observed": 5, "is_censored": 0, "limit": 8},
+      {"observed": 4, "is_censored": 0, "limit": 8},
+      {"observed": 8, "is_censored": 1, "limit": 8},
+      {"observed": 8, "is_censored": 1, "limit": 8},
+      {"observed": 3, "is_censored": 0, "limit": 8}
+    ]
+  }
+}

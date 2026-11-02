@@ -1,0 +1,534 @@
+{
+  "model": {
+    "model_id": "inter-branch-transfer-example",
+    "version": "1",
+    "kind": "indexed_program",
+    "axes": {
+      "a": [
+        0,
+        1
+      ],
+      "b": [
+        0,
+        1
+      ],
+      "t": [
+        0,
+        1
+      ],
+      "s": [
+        0,
+        1
+      ]
+    },
+    "inputs": [
+      "a",
+      "b",
+      "t",
+      "s",
+      "need",
+      "prob",
+      "lead_value",
+      "route_cost",
+      "different",
+      "reserve_value",
+      "capacity_value",
+      "gate_value",
+      "penalty_value",
+      "send_open"
+    ],
+    "parameters": [
+      "initial_A",
+      "initial_B",
+      "pipeline",
+      "transfer_bound"
+    ],
+    "tables": {
+      "demand": {
+        "axes": [
+          "b",
+          "t",
+          "s"
+        ],
+        "column": "need"
+      },
+      "probability": {
+        "axes": [
+          "s"
+        ],
+        "column": "prob"
+      },
+      "lead": {
+        "axes": [
+          "a",
+          "b"
+        ],
+        "column": "lead_value"
+      },
+      "cost": {
+        "axes": [
+          "a",
+          "b"
+        ],
+        "column": "route_cost"
+      },
+      "off_diagonal": {
+        "axes": [
+          "a",
+          "b"
+        ],
+        "column": "different"
+      },
+      "reserve": {
+        "axes": [
+          "b"
+        ],
+        "column": "reserve_value"
+      },
+      "capacity": {
+        "axes": [
+          "b"
+        ],
+        "column": "capacity_value"
+      },
+      "approved": {
+        "axes": [
+          "b"
+        ],
+        "column": "gate_value"
+      },
+      "penalty": {
+        "axes": [
+          "b"
+        ],
+        "column": "penalty_value"
+      },
+      "dispatch_open": {
+        "axes": [
+          "t"
+        ],
+        "column": "send_open"
+      }
+    },
+    "scenario_axis": "s",
+    "probability_table": "probability",
+    "decisions": {
+      "transfer": {
+        "axes": [
+          "a",
+          "b",
+          "t"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 6,
+        "boundary": [
+          {
+            "index": [
+              0,
+              0,
+              -1
+            ],
+            "expression": "0"
+          },
+          {
+            "index": [
+              0,
+              1,
+              -1
+            ],
+            "expression": "pipeline"
+          },
+          {
+            "index": [
+              1,
+              0,
+              -1
+            ],
+            "expression": "0"
+          },
+          {
+            "index": [
+              1,
+              1,
+              -1
+            ],
+            "expression": "0"
+          }
+        ]
+      },
+      "stock": {
+        "axes": [
+          "b",
+          "t"
+        ],
+        "lower": 0,
+        "upper": 10,
+        "boundary": [
+          {
+            "index": [
+              0,
+              -1
+            ],
+            "expression": "initial_A"
+          },
+          {
+            "index": [
+              1,
+              -1
+            ],
+            "expression": "initial_B"
+          }
+        ]
+      }
+    },
+    "objective": {
+      "terms": [
+        {
+          "over": [
+            "b",
+            "t",
+            "s"
+          ],
+          "expression": "probability[s] * penalty[b] * positive_part(demand[b,t,s] - stock[b,t])"
+        },
+        {
+          "over": [
+            "a",
+            "b",
+            "t"
+          ],
+          "expression": "cost[a,b] * transfer[a,b,t]"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "over": [
+          "b",
+          "t"
+        ],
+        "expression": "stock[b,t] == stock[b,t-1] - SUM_OVER(a, transfer[b,a,t]) + SUM_OVER(a, transfer[a,b,t-lead[a,b]])"
+      },
+      {
+        "over": [
+          "a",
+          "t"
+        ],
+        "expression": "SUM_OVER(b, transfer[a,b,t]) <= positive_part(stock[a,t-1] - reserve[a])"
+      },
+      {
+        "over": [
+          "b",
+          "t"
+        ],
+        "expression": "stock[b,t] <= capacity[b]"
+      },
+      {
+        "over": [
+          "a",
+          "b",
+          "t"
+        ],
+        "expression": "transfer[a,b,t] <= transfer_bound * approved[a] * approved[b] * off_diagonal[a,b] * dispatch_open[t]"
+      },
+      {
+        "over": [
+          "b"
+        ],
+        "expression": "approved[b] * (1 - approved[b]) == 0"
+      },
+      {
+        "over": [
+          "a",
+          "t"
+        ],
+        "expression": "transfer[a,a,t] == 0"
+      }
+    ]
+  },
+  "parameters": {
+    "initial_A": 8,
+    "initial_B": 0,
+    "pipeline": 0,
+    "transfer_bound": 6
+  },
+  "dataset": {
+    "row_ids": [
+      "0-0-0-0",
+      "0-0-0-1",
+      "0-0-1-0",
+      "0-0-1-1",
+      "0-1-0-0",
+      "0-1-0-1",
+      "0-1-1-0",
+      "0-1-1-1",
+      "1-0-0-0",
+      "1-0-0-1",
+      "1-0-1-0",
+      "1-0-1-1",
+      "1-1-0-0",
+      "1-1-0-1",
+      "1-1-1-0",
+      "1-1-1-1"
+    ],
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "t": 0,
+        "s": 0,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "t": 0,
+        "s": 1,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "t": 1,
+        "s": 0,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "t": 1,
+        "s": 1,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "t": 0,
+        "s": 0,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "t": 0,
+        "s": 1,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "t": 1,
+        "s": 0,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "t": 1,
+        "s": 1,
+        "need": 6,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 1,
+        "b": 0,
+        "t": 0,
+        "s": 0,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 1,
+        "b": 0,
+        "t": 0,
+        "s": 1,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 1,
+        "b": 0,
+        "t": 1,
+        "s": 0,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 1,
+        "b": 0,
+        "t": 1,
+        "s": 1,
+        "need": 2,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 1,
+        "reserve_value": 2,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 1,
+        "b": 1,
+        "t": 0,
+        "s": 0,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 1,
+        "b": 1,
+        "t": 0,
+        "s": 1,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 1
+      },
+      {
+        "a": 1,
+        "b": 1,
+        "t": 1,
+        "s": 0,
+        "need": 4,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      },
+      {
+        "a": 1,
+        "b": 1,
+        "t": 1,
+        "s": 1,
+        "need": 6,
+        "prob": 0.5,
+        "lead_value": 1,
+        "route_cost": 1,
+        "different": 0,
+        "reserve_value": 0,
+        "capacity_value": 10,
+        "gate_value": 1,
+        "penalty_value": 5,
+        "send_open": 0
+      }
+    ]
+  }
+}

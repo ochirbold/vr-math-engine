@@ -1,0 +1,719 @@
+{
+  "model": {
+    "model_id": "assortment-literal-example",
+    "version": "1",
+    "kind": "indexed_program",
+    "axes": {
+      "i": [
+        0,
+        1,
+        2
+      ],
+      "j": [
+        0,
+        1,
+        2
+      ],
+      "k": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "inputs": [
+      "i",
+      "j",
+      "k",
+      "base_value",
+      "eta_value",
+      "margin_value",
+      "setup_value",
+      "width_value",
+      "stock_value",
+      "max_value",
+      "rho_value"
+    ],
+    "parameters": [
+      "shelf_capacity"
+    ],
+    "tables": {
+      "baseline": {
+        "axes": [
+          "i"
+        ],
+        "column": "base_value"
+      },
+      "eta": {
+        "axes": [
+          "i"
+        ],
+        "column": "eta_value"
+      },
+      "margin": {
+        "axes": [
+          "i"
+        ],
+        "column": "margin_value"
+      },
+      "setup": {
+        "axes": [
+          "i"
+        ],
+        "column": "setup_value"
+      },
+      "width": {
+        "axes": [
+          "i"
+        ],
+        "column": "width_value"
+      },
+      "available": {
+        "axes": [
+          "i"
+        ],
+        "column": "stock_value"
+      },
+      "max_facings": {
+        "axes": [
+          "i"
+        ],
+        "column": "max_value"
+      },
+      "rho": {
+        "axes": [
+          "i",
+          "j"
+        ],
+        "column": "rho_value"
+      }
+    },
+    "decisions": {
+      "selected": {
+        "axes": [
+          "i"
+        ],
+        "domain": "binary"
+      },
+      "facings": {
+        "axes": [
+          "i"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 3
+      },
+      "level": {
+        "axes": [
+          "i",
+          "k"
+        ],
+        "domain": "binary"
+      },
+      "modeled_demand": {
+        "axes": [
+          "i"
+        ],
+        "lower": 0,
+        "upper": 20
+      },
+      "sales": {
+        "axes": [
+          "i"
+        ],
+        "lower": 0,
+        "upper": 20
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "terms": [
+        {
+          "over": [
+            "i"
+          ],
+          "expression": "margin[i] * sales[i] - setup[i] * selected[i]"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "SUM_OVER(k, level[i,k]) == 1"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "selected[i] == 1 - level[i,0]"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "facings[i] == SUM_OVER(k, k * level[i,k])"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "selected[i] <= facings[i]"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "facings[i] <= max_facings[i] * selected[i]"
+      },
+      {
+        "expression": "SUM_OVER(i, width[i] * facings[i]) <= shelf_capacity"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "modeled_demand[i] == baseline[i] * selected[i] + eta[i] * SUM_OVER(k, log(1+k) * level[i,k]) + SUM_OVER(j, rho[i,j] * baseline[j] * (1-selected[j]))"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "sales[i] == modeled_demand[i] - positive_part(modeled_demand[i] - available[i])"
+      },
+      {
+        "over": [
+          "i",
+          "j"
+        ],
+        "expression": "rho[i,j] >= 0"
+      },
+      {
+        "over": [
+          "i"
+        ],
+        "expression": "rho[i,i] == 0"
+      },
+      {
+        "over": [
+          "j"
+        ],
+        "expression": "SUM_OVER(i, rho[i,j]) <= 1"
+      }
+    ]
+  },
+  "parameters": {
+    "shelf_capacity": 3.5
+  },
+  "dataset": {
+    "row_ids": [
+      "0-0-0",
+      "0-0-1",
+      "0-0-2",
+      "0-0-3",
+      "0-1-0",
+      "0-1-1",
+      "0-1-2",
+      "0-1-3",
+      "0-2-0",
+      "0-2-1",
+      "0-2-2",
+      "0-2-3",
+      "1-0-0",
+      "1-0-1",
+      "1-0-2",
+      "1-0-3",
+      "1-1-0",
+      "1-1-1",
+      "1-1-2",
+      "1-1-3",
+      "1-2-0",
+      "1-2-1",
+      "1-2-2",
+      "1-2-3",
+      "2-0-0",
+      "2-0-1",
+      "2-0-2",
+      "2-0-3",
+      "2-1-0",
+      "2-1-1",
+      "2-1-2",
+      "2-1-3",
+      "2-2-0",
+      "2-2-1",
+      "2-2-2",
+      "2-2-3"
+    ],
+    "rows": [
+      {
+        "i": 0,
+        "j": 0,
+        "k": 0,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 0,
+        "j": 0,
+        "k": 1,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 0,
+        "j": 0,
+        "k": 2,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 0,
+        "j": 0,
+        "k": 3,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 0,
+        "j": 1,
+        "k": 0,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.2
+      },
+      {
+        "i": 0,
+        "j": 1,
+        "k": 1,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.2
+      },
+      {
+        "i": 0,
+        "j": 1,
+        "k": 2,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.2
+      },
+      {
+        "i": 0,
+        "j": 1,
+        "k": 3,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.2
+      },
+      {
+        "i": 0,
+        "j": 2,
+        "k": 0,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 0,
+        "j": 2,
+        "k": 1,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 0,
+        "j": 2,
+        "k": 2,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 0,
+        "j": 2,
+        "k": 3,
+        "base_value": 4,
+        "eta_value": 2,
+        "margin_value": 4,
+        "setup_value": 2,
+        "width_value": 1,
+        "stock_value": 7,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 1,
+        "j": 0,
+        "k": 0,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.1
+      },
+      {
+        "i": 1,
+        "j": 0,
+        "k": 1,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.1
+      },
+      {
+        "i": 1,
+        "j": 0,
+        "k": 2,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.1
+      },
+      {
+        "i": 1,
+        "j": 0,
+        "k": 3,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.1
+      },
+      {
+        "i": 1,
+        "j": 1,
+        "k": 0,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0
+      },
+      {
+        "i": 1,
+        "j": 1,
+        "k": 1,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0
+      },
+      {
+        "i": 1,
+        "j": 1,
+        "k": 2,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0
+      },
+      {
+        "i": 1,
+        "j": 1,
+        "k": 3,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0
+      },
+      {
+        "i": 1,
+        "j": 2,
+        "k": 0,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.2
+      },
+      {
+        "i": 1,
+        "j": 2,
+        "k": 1,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.2
+      },
+      {
+        "i": 1,
+        "j": 2,
+        "k": 2,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.2
+      },
+      {
+        "i": 1,
+        "j": 2,
+        "k": 3,
+        "base_value": 3,
+        "eta_value": 1.5,
+        "margin_value": 6,
+        "setup_value": 3,
+        "width_value": 1.5,
+        "stock_value": 5,
+        "max_value": 2,
+        "rho_value": 0.2
+      },
+      {
+        "i": 2,
+        "j": 0,
+        "k": 0,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.15
+      },
+      {
+        "i": 2,
+        "j": 0,
+        "k": 1,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.15
+      },
+      {
+        "i": 2,
+        "j": 0,
+        "k": 2,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.15
+      },
+      {
+        "i": 2,
+        "j": 0,
+        "k": 3,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.15
+      },
+      {
+        "i": 2,
+        "j": 1,
+        "k": 0,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 2,
+        "j": 1,
+        "k": 1,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 2,
+        "j": 1,
+        "k": 2,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 2,
+        "j": 1,
+        "k": 3,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0.1
+      },
+      {
+        "i": 2,
+        "j": 2,
+        "k": 0,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 2,
+        "j": 2,
+        "k": 1,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 2,
+        "j": 2,
+        "k": 2,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0
+      },
+      {
+        "i": 2,
+        "j": 2,
+        "k": 3,
+        "base_value": 5,
+        "eta_value": 1,
+        "margin_value": 3,
+        "setup_value": 1,
+        "width_value": 1,
+        "stock_value": 6,
+        "max_value": 3,
+        "rho_value": 0
+      }
+    ]
+  }
+}

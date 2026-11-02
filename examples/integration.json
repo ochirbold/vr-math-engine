@@ -1,0 +1,37 @@
+{
+  "model": {
+    "model_id": "polynomial-integral",
+    "version": "1",
+    "kind": "numerical_integration",
+    "inputs": [
+      "start",
+      "end"
+    ],
+    "parameters": [
+      "scale"
+    ],
+    "variable": "x",
+    "expression": "scale*x**2",
+    "lower": "start",
+    "upper": "end"
+  },
+  "parameters": {
+    "scale": 3
+  },
+  "dataset": {
+    "row_ids": [
+      "forward",
+      "reverse"
+    ],
+    "rows": [
+      {
+        "start": 0,
+        "end": 2
+      },
+      {
+        "start": 2,
+        "end": 0
+      }
+    ]
+  }
+}

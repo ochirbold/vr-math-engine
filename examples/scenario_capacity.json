@@ -1,0 +1,16 @@
+{
+  "model": {
+    "model_id": "capacity-choice", "version": "1", "kind": "scenario_program",
+    "inputs": ["workload", "weight"], "weight_column": "weight",
+    "parameters": ["unit_capacity", "fixed_cost", "delay_cost"],
+    "formulas": [{"target": "cost", "expression": "fixed_cost * units + delay_cost * positive_part(workload - unit_capacity * units) ** 2"}],
+    "decisions": {"units": {"values": [1, 2, 3]}},
+    "objective": {"expression": "cost", "sense": "minimize"},
+    "constraints": ["fixed_cost * units <= 12"],
+    "reductions": {"expected_cost": {"expression": "cost"}, "cost_q90": {"expression": "cost", "operation": "quantile", "probability": "0.9"}}
+  },
+  "parameters": {"unit_capacity": 5, "fixed_cost": 4, "delay_cost": 1},
+  "dataset": {"row_ids": ["light", "normal", "heavy"], "rows": [
+    {"workload": 3, "weight": 0.25}, {"workload": 7, "weight": 0.5}, {"workload": 11, "weight": 0.25}
+  ]}
+}

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "test-orders": {
+      "table": "TEST_OWNER.MATH_TEST_ORDERS",
+      "id_column": "ID",
+      "scenario_column": "SCENARIO_CODE",
+      "inputs": ["QTY", "UNIT_PRICE", "DISCOUNT"]
+    }
+  }
+}

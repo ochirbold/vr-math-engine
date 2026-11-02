@@ -1,0 +1,520 @@
+{
+  "model": {
+    "model_id": "finite-markdown-example",
+    "version": "1",
+    "kind": "indexed_program",
+    "axes": {
+      "t": [
+        0,
+        1,
+        2
+      ],
+      "k": [
+        0,
+        1,
+        2
+      ],
+      "s": [
+        0,
+        1
+      ]
+    },
+    "inputs": [
+      "t",
+      "k",
+      "s",
+      "price_value",
+      "need",
+      "weight"
+    ],
+    "parameters": [
+      "initial",
+      "holding",
+      "salvage",
+      "price_floor"
+    ],
+    "tables": {
+      "price": {
+        "axes": [
+          "k"
+        ],
+        "column": "price_value"
+      },
+      "demand": {
+        "axes": [
+          "t",
+          "k",
+          "s"
+        ],
+        "column": "need"
+      },
+      "probability": {
+        "axes": [
+          "s"
+        ],
+        "column": "weight"
+      }
+    },
+    "scenario_axis": "s",
+    "probability_table": "probability",
+    "decisions": {
+      "chosen": {
+        "axes": [
+          "t",
+          "k"
+        ],
+        "domain": "binary"
+      },
+      "selling_price": {
+        "axes": [
+          "t"
+        ],
+        "lower": 6,
+        "upper": 10,
+        "boundary": [
+          {
+            "index": [
+              -1
+            ],
+            "expression": "10"
+          }
+        ]
+      },
+      "sales": {
+        "axes": [
+          "t",
+          "k",
+          "s"
+        ],
+        "lower": 0,
+        "upper": 8,
+        "information": [
+          {
+            "at": {
+              "t": 0,
+              "k": 0
+            },
+            "groups": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 0,
+              "k": 1
+            },
+            "groups": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 0,
+              "k": 2
+            },
+            "groups": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 1,
+              "k": 0
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 1,
+              "k": 1
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 1,
+              "k": 2
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 2,
+              "k": 0
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 2,
+              "k": 1
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 2,
+              "k": 2
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          }
+        ]
+      },
+      "inventory": {
+        "axes": [
+          "t",
+          "s"
+        ],
+        "lower": 0,
+        "upper": 8,
+        "information": [
+          {
+            "at": {
+              "t": 0
+            },
+            "groups": [
+              [
+                0,
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 1
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "at": {
+              "t": 2
+            },
+            "groups": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ]
+          }
+        ],
+        "boundary": [
+          {
+            "index": [
+              -1,
+              0
+            ],
+            "expression": "initial"
+          },
+          {
+            "index": [
+              -1,
+              1
+            ],
+            "expression": "initial"
+          }
+        ]
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "terms": [
+        {
+          "over": [
+            "t",
+            "k",
+            "s"
+          ],
+          "expression": "probability[s]*price[k]*sales[t,k,s]"
+        },
+        {
+          "over": [
+            "t",
+            "s"
+          ],
+          "expression": "-probability[s]*holding*inventory[t,s]"
+        },
+        {
+          "over": [
+            "s"
+          ],
+          "expression": "probability[s]*salvage*inventory[2,s]"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "over": [
+          "t"
+        ],
+        "expression": "SUM_OVER(k, chosen[t,k]) == 1"
+      },
+      {
+        "over": [
+          "t"
+        ],
+        "expression": "selling_price[t] == SUM_OVER(k, price[k]*chosen[t,k])"
+      },
+      {
+        "over": [
+          "t"
+        ],
+        "expression": "selling_price[t] <= selling_price[t-1]"
+      },
+      {
+        "over": [
+          "t"
+        ],
+        "expression": "selling_price[t] >= price_floor"
+      },
+      {
+        "over": [
+          "t",
+          "k",
+          "s"
+        ],
+        "expression": "sales[t,k,s] <= demand[t,k,s]*chosen[t,k]"
+      },
+      {
+        "over": [
+          "t",
+          "s"
+        ],
+        "expression": "inventory[t,s] == inventory[t-1,s] - SUM_OVER(k, sales[t,k,s])"
+      }
+    ]
+  },
+  "parameters": {
+    "initial": 8,
+    "holding": 0.2,
+    "salvage": 1,
+    "price_floor": 6
+  },
+  "dataset": {
+    "row_ids": [
+      "0-0-0",
+      "0-0-1",
+      "0-1-0",
+      "0-1-1",
+      "0-2-0",
+      "0-2-1",
+      "1-0-0",
+      "1-0-1",
+      "1-1-0",
+      "1-1-1",
+      "1-2-0",
+      "1-2-1",
+      "2-0-0",
+      "2-0-1",
+      "2-1-0",
+      "2-1-1",
+      "2-2-0",
+      "2-2-1"
+    ],
+    "rows": [
+      {
+        "t": 0,
+        "k": 0,
+        "s": 0,
+        "price_value": 6,
+        "need": 4,
+        "weight": 0.5
+      },
+      {
+        "t": 0,
+        "k": 0,
+        "s": 1,
+        "price_value": 6,
+        "need": 4,
+        "weight": 0.5
+      },
+      {
+        "t": 0,
+        "k": 1,
+        "s": 0,
+        "price_value": 8,
+        "need": 3,
+        "weight": 0.5
+      },
+      {
+        "t": 0,
+        "k": 1,
+        "s": 1,
+        "price_value": 8,
+        "need": 3,
+        "weight": 0.5
+      },
+      {
+        "t": 0,
+        "k": 2,
+        "s": 0,
+        "price_value": 10,
+        "need": 2,
+        "weight": 0.5
+      },
+      {
+        "t": 0,
+        "k": 2,
+        "s": 1,
+        "price_value": 10,
+        "need": 2,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 0,
+        "s": 0,
+        "price_value": 6,
+        "need": 4,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 0,
+        "s": 1,
+        "price_value": 6,
+        "need": 6,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 1,
+        "s": 0,
+        "price_value": 8,
+        "need": 3,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 1,
+        "s": 1,
+        "price_value": 8,
+        "need": 4,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 2,
+        "s": 0,
+        "price_value": 10,
+        "need": 2,
+        "weight": 0.5
+      },
+      {
+        "t": 1,
+        "k": 2,
+        "s": 1,
+        "price_value": 10,
+        "need": 3,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 0,
+        "s": 0,
+        "price_value": 6,
+        "need": 3,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 0,
+        "s": 1,
+        "price_value": 6,
+        "need": 5,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 1,
+        "s": 0,
+        "price_value": 8,
+        "need": 2,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 1,
+        "s": 1,
+        "price_value": 8,
+        "need": 4,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 2,
+        "s": 0,
+        "price_value": 10,
+        "need": 1,
+        "weight": 0.5
+      },
+      {
+        "t": 2,
+        "k": 2,
+        "s": 1,
+        "price_value": 10,
+        "need": 3,
+        "weight": 0.5
+      }
+    ]
+  }
+}

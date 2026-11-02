@@ -1,0 +1,29 @@
+{
+  "model": {
+    "model_id": "two-period-order-example", "version": "1", "kind": "indexed_program",
+    "axes": {"t": [0, 1], "s": [0, 1]},
+    "inputs": ["t", "s", "need", "prob"],
+    "parameters": ["initial", "pipeline", "lead", "setup_cost", "unit_cost", "holding_cost", "shortage_cost", "minimum", "maximum"],
+    "tables": {"demand": {"axes": ["t", "s"], "column": "need"}, "probability": {"axes": ["s"], "column": "prob"}},
+    "scenario_axis": "s", "probability_table": "probability",
+    "decisions": {
+      "order": {"axes": ["t"], "domain": "integer", "lower": 0, "upper": 6, "boundary": [{"index": [-1], "expression": "pipeline"}]},
+      "placed": {"axes": ["t"], "domain": "binary"},
+      "inventory": {"axes": ["t", "s"], "lower": 0, "upper": 12, "information": "scenario_specific",
+                    "boundary": [{"index": [-1, 0], "expression": "initial"}, {"index": [-1, 1], "expression": "initial"}]},
+      "unmet": {"axes": ["t", "s"], "lower": 0, "upper": 8, "information": "scenario_specific"}
+    },
+    "objective": {"terms": [{"over": ["t", "s"], "expression": "probability[s] * (setup_cost * placed[t] + unit_cost * order[t] + holding_cost * inventory[t,s] + shortage_cost * unmet[t,s])"}]},
+    "constraints": [
+      {"over": ["t", "s"], "expression": "inventory[t,s] == inventory[t-1,s] + order[t-lead] - demand[t,s] + unmet[t,s]"},
+      {"over": ["t", "s"], "expression": "unmet[t,s] <= demand[t,s]"},
+      {"over": ["t"], "expression": "minimum * placed[t] <= order[t]"},
+      {"over": ["t"], "expression": "order[t] <= maximum * placed[t]"}
+    ]
+  },
+  "parameters": {"initial": 2, "pipeline": 0, "lead": 1, "setup_cost": 2, "unit_cost": 1, "holding_cost": 0.2, "shortage_cost": 6, "minimum": 2, "maximum": 6},
+  "dataset": {"row_ids": ["0-low", "0-high", "1-low", "1-high"], "rows": [
+    {"t": 0, "s": 0, "need": 1, "prob": 0.5}, {"t": 0, "s": 1, "need": 3, "prob": 0.5},
+    {"t": 1, "s": 0, "need": 1, "prob": 0.5}, {"t": 1, "s": 1, "need": 4, "prob": 0.5}
+  ]}
+}

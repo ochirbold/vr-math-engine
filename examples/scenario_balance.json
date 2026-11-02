@@ -1,0 +1,19 @@
+{
+  "model": {
+    "model_id": "asymmetric-balance", "version": "1", "kind": "scenario_program",
+    "inputs": ["requirement", "weight"], "weight_column": "weight",
+    "parameters": ["over_cost", "under_cost"],
+    "formulas": [{"target": "loss", "expression": "over_cost * positive_part(level - requirement) + under_cost * positive_part(requirement - level)"}],
+    "decisions": {"level": {"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}},
+    "objective": {"expression": "loss", "operation": "expectation", "sense": "minimize"},
+    "reductions": {
+      "mean_requirement": {"expression": "requirement", "operation": "expectation"},
+      "target_quantile": {"expression": "requirement", "operation": "quantile", "probability": "under_cost / (over_cost + under_cost)"},
+      "expected_loss": {"expression": "loss", "operation": "expectation"}
+    }
+  },
+  "parameters": {"over_cost": 2, "under_cost": 8},
+  "dataset": {"row_ids": ["low", "medium", "high"], "rows": [
+    {"requirement": 2, "weight": 0.2}, {"requirement": 5, "weight": 0.5}, {"requirement": 9, "weight": 0.3}
+  ]}
+}

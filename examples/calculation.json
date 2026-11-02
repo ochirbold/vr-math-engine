@@ -1,0 +1,19 @@
+{
+  "model": {
+    "model_id": "invoice-calculation", "version": "1", "kind": "calculation",
+    "inputs": ["QTY", "UNIT_PRICE", "DISCOUNT"],
+    "formulas": [
+      {"target": "NET", "expression": "max(0, TOTAL - DISCOUNT)", "stage": "row"},
+      {"target": "TOTAL", "expression": "QTY * UNIT_PRICE", "stage": "row"},
+      {"target": "TOTAL_QTY", "expression": "COLUMN_SUM('QTY')", "stage": "aggregate"},
+      {"target": "HIGH_PRICE", "expression": "AGG_MAX('UNIT_PRICE')", "stage": "aggregate"},
+      {"target": "GRAND_TOTAL", "expression": "COLUMN_SUM('NET')", "stage": "aggregate"},
+      {"target": "PRICE_GAP", "expression": "abs(UNIT_PRICE - HIGH_PRICE)", "stage": "post"},
+      {"target": "SCENARIO_QTY", "expression": "TOTAL_QTY", "stage": "post"}
+    ]
+  },
+  "dataset": {
+    "row_ids": ["101", "102"],
+    "rows": [{"QTY": 2, "UNIT_PRICE": 120, "DISCOUNT": 15}, {"QTY": 3, "UNIT_PRICE": 80, "DISCOUNT": 30}]
+  }
+}

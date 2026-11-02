@@ -1,0 +1,12 @@
+{
+  "model": {
+    "model_id": "resource-allocation", "version": "1", "kind": "linear_program",
+    "inputs": ["BENEFIT", "LIMIT"], "parameters": ["CAPACITY"],
+    "decisions": {"allocation": {"size": "rows", "lower": 0}},
+    "objective": {"sense": "maximize", "expression": "DOT(COLUMN('BENEFIT'), allocation) + 7"},
+    "constraints": ["allocation <= COLUMN('LIMIT')", "SUM(allocation) <= CAPACITY"],
+    "formulas": [{"target": "ALLOCATED", "expression": "allocation", "stage": "post"}]
+  },
+  "dataset": {"row_ids": ["A", "B"], "rows": [{"BENEFIT": 10, "LIMIT": 4}, {"BENEFIT": 6, "LIMIT": 5}]},
+  "parameters": {"CAPACITY": 6}
+}

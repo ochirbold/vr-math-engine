@@ -1,0 +1,21 @@
+{
+  "model": {
+    "model_id": "independent-sum-analysis", "version": "1", "kind": "scenario_program",
+    "parameters": ["mean_a", "mean_b", "dispersion"],
+    "sampling": {
+      "dependence": "independent", "seed": 20261027, "count": 5000,
+      "variables": {
+        "a": {"distribution": "negative_binomial", "arguments": {"mean": "mean_a", "dispersion": "dispersion"}},
+        "b": {"distribution": "negative_binomial", "arguments": {"mean": "mean_b", "dispersion": "dispersion"}}
+      }
+    },
+    "formulas": [{"target": "total", "expression": "a + b"}],
+    "reductions": {
+      "mean_total": {"expression": "total", "operation": "expectation"},
+      "variance_total": {"expression": "total", "operation": "variance"},
+      "q80_total": {"expression": "total", "operation": "quantile", "probability": "0.8"}
+    }
+  },
+  "parameters": {"mean_a": 3, "mean_b": 7, "dispersion": 0.4},
+  "dataset": {"row_ids": ["context"], "rows": [{}]}
+}

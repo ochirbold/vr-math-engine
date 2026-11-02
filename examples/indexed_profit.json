@@ -1,0 +1,570 @@
+{
+  "model": {
+    "axes": {
+      "s": [
+        0,
+        1
+      ],
+      "t": [
+        0,
+        1
+      ],
+      "w": [
+        0,
+        1
+      ],
+      "k": [
+        0,
+        1
+      ]
+    },
+    "tables": {
+      "prob": {
+        "axes": [
+          "w"
+        ],
+        "column": "weight"
+      },
+      "reliability": {
+        "axes": [
+          "s",
+          "w"
+        ],
+        "column": "rate"
+      },
+      "cost": {
+        "axes": [
+          "s"
+        ],
+        "column": "cost"
+      },
+      "price": {
+        "axes": [
+          "k"
+        ],
+        "column": "price"
+      },
+      "demand": {
+        "axes": [
+          "t",
+          "k",
+          "w"
+        ],
+        "column": "need"
+      }
+    },
+    "decisions": {
+      "order": {
+        "axes": [
+          "s",
+          "t"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 4,
+        "boundary": [
+          {
+            "index": [
+              0,
+              -1
+            ],
+            "expression": "0"
+          },
+          {
+            "index": [
+              1,
+              -1
+            ],
+            "expression": "0"
+          }
+        ]
+      },
+      "opened": {
+        "axes": [
+          "s",
+          "t"
+        ],
+        "domain": "binary",
+        "lower": 0,
+        "upper": 1
+      },
+      "allocation": {
+        "axes": [
+          "t"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 8
+      },
+      "selected": {
+        "axes": [],
+        "domain": "binary",
+        "lower": 0,
+        "upper": 1
+      },
+      "facings": {
+        "axes": [],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 1
+      },
+      "chosen": {
+        "axes": [
+          "k"
+        ],
+        "domain": "binary",
+        "lower": 0,
+        "upper": 1
+      },
+      "warehouse": {
+        "axes": [
+          "t",
+          "w"
+        ],
+        "domain": "continuous",
+        "lower": 0,
+        "upper": 9,
+        "information": "scenario_specific",
+        "boundary": [
+          {
+            "index": [
+              -1,
+              0
+            ],
+            "expression": "initial"
+          },
+          {
+            "index": [
+              -1,
+              1
+            ],
+            "expression": "initial"
+          }
+        ]
+      },
+      "stock": {
+        "axes": [
+          "t",
+          "w"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 8,
+        "information": "scenario_specific",
+        "boundary": [
+          {
+            "index": [
+              -1,
+              0
+            ],
+            "expression": "0"
+          },
+          {
+            "index": [
+              -1,
+              1
+            ],
+            "expression": "0"
+          }
+        ]
+      },
+      "before_sales": {
+        "axes": [
+          "t",
+          "w"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 8,
+        "information": "scenario_specific"
+      },
+      "available": {
+        "axes": [
+          "t",
+          "w"
+        ],
+        "domain": "binary",
+        "lower": 0,
+        "upper": 1,
+        "information": "scenario_specific"
+      },
+      "sales": {
+        "axes": [
+          "t",
+          "k",
+          "w"
+        ],
+        "domain": "integer",
+        "lower": 0,
+        "upper": 8,
+        "information": "scenario_specific"
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "terms": [
+        {
+          "over": [
+            "t",
+            "k",
+            "w"
+          ],
+          "expression": "prob[w]*price[k]*sales[t,k,w]"
+        },
+        {
+          "over": [
+            "s",
+            "t"
+          ],
+          "expression": "-cost[s]*order[s,t]-setup*opened[s,t]"
+        },
+        {
+          "over": [
+            "t",
+            "w"
+          ],
+          "expression": "-prob[w]*holding*stock[t,w]"
+        },
+        {
+          "over": [
+            "t"
+          ],
+          "expression": "-allocation_cost*allocation[t]"
+        },
+        {
+          "over": [],
+          "expression": "-shelf_cost*selected"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "over": [
+          "s",
+          "t"
+        ],
+        "expression": "minimum*opened[s,t] <= order[s,t]"
+      },
+      {
+        "over": [
+          "s",
+          "t"
+        ],
+        "expression": "order[s,t] <= capacity*opened[s,t]"
+      },
+      {
+        "over": [
+          "s"
+        ],
+        "expression": "order[s,1] == 0"
+      },
+      {
+        "over": [],
+        "expression": "allocation[0] == 0"
+      },
+      {
+        "over": [],
+        "expression": "SUM_OVER(k, chosen[k]) == 1"
+      },
+      {
+        "over": [],
+        "expression": "facings == selected"
+      },
+      {
+        "over": [
+          "t",
+          "w"
+        ],
+        "expression": "warehouse[t,w] == warehouse[t-1,w]+SUM_OVER(s, reliability[s,w]*order[s,t-lead])-allocation[t]"
+      },
+      {
+        "over": [
+          "t",
+          "w"
+        ],
+        "expression": "before_sales[t,w] == stock[t-1,w]+allocation[t]"
+      },
+      {
+        "over": [
+          "t",
+          "w"
+        ],
+        "expression": "stock[t,w] == before_sales[t,w]-SUM_OVER(k, sales[t,k,w])"
+      },
+      {
+        "over": [
+          "t",
+          "w"
+        ],
+        "expression": "available[t,w] <= before_sales[t,w]"
+      },
+      {
+        "over": [
+          "t",
+          "w"
+        ],
+        "expression": "before_sales[t,w] <= stock_cap*available[t,w]"
+      },
+      {
+        "over": [
+          "t",
+          "k",
+          "w"
+        ],
+        "expression": "sales[t,k,w] <= demand[t,k,w]*chosen[k]"
+      },
+      {
+        "over": [
+          "t",
+          "k",
+          "w"
+        ],
+        "expression": "sales[t,k,w] <= stock_cap*selected"
+      },
+      {
+        "over": [
+          "t",
+          "k",
+          "w"
+        ],
+        "expression": "sales[t,k,w] <= stock_cap*available[t,w]"
+      }
+    ],
+    "model_id": "indexed-profit",
+    "version": "1",
+    "kind": "indexed_program",
+    "parameters": [
+      "lead",
+      "initial",
+      "minimum",
+      "capacity",
+      "stock_cap",
+      "setup",
+      "holding",
+      "allocation_cost",
+      "shelf_cost"
+    ],
+    "inputs": [
+      "s",
+      "t",
+      "w",
+      "k",
+      "weight",
+      "rate",
+      "cost",
+      "price",
+      "need"
+    ],
+    "scenario_axis": "w",
+    "probability_table": "prob"
+  },
+  "parameters": {
+    "lead": 1,
+    "initial": 1,
+    "minimum": 2,
+    "capacity": 4,
+    "stock_cap": 8,
+    "setup": 1,
+    "holding": 0.2,
+    "allocation_cost": 0.1,
+    "shelf_cost": 1
+  },
+  "dataset": {
+    "row_ids": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "rows": [
+      {
+        "s": 0,
+        "t": 0,
+        "w": 0,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 1,
+        "price": 6,
+        "need": 0
+      },
+      {
+        "s": 0,
+        "t": 0,
+        "w": 0,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 1,
+        "price": 9,
+        "need": 0
+      },
+      {
+        "s": 0,
+        "t": 0,
+        "w": 1,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 0.5,
+        "cost": 1,
+        "price": 6,
+        "need": 0
+      },
+      {
+        "s": 0,
+        "t": 0,
+        "w": 1,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 0.5,
+        "cost": 1,
+        "price": 9,
+        "need": 0
+      },
+      {
+        "s": 0,
+        "t": 1,
+        "w": 0,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 1,
+        "price": 6,
+        "need": 5
+      },
+      {
+        "s": 0,
+        "t": 1,
+        "w": 0,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 1,
+        "price": 9,
+        "need": 3
+      },
+      {
+        "s": 0,
+        "t": 1,
+        "w": 1,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 0.5,
+        "cost": 1,
+        "price": 6,
+        "need": 7
+      },
+      {
+        "s": 0,
+        "t": 1,
+        "w": 1,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 0.5,
+        "cost": 1,
+        "price": 9,
+        "need": 5
+      },
+      {
+        "s": 1,
+        "t": 0,
+        "w": 0,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 6,
+        "need": 0
+      },
+      {
+        "s": 1,
+        "t": 0,
+        "w": 0,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 9,
+        "need": 0
+      },
+      {
+        "s": 1,
+        "t": 0,
+        "w": 1,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 6,
+        "need": 0
+      },
+      {
+        "s": 1,
+        "t": 0,
+        "w": 1,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 9,
+        "need": 0
+      },
+      {
+        "s": 1,
+        "t": 1,
+        "w": 0,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 6,
+        "need": 5
+      },
+      {
+        "s": 1,
+        "t": 1,
+        "w": 0,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 9,
+        "need": 3
+      },
+      {
+        "s": 1,
+        "t": 1,
+        "w": 1,
+        "k": 0,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 6,
+        "need": 7
+      },
+      {
+        "s": 1,
+        "t": 1,
+        "w": 1,
+        "k": 1,
+        "weight": 0.5,
+        "rate": 1,
+        "cost": 3,
+        "price": 9,
+        "need": 5
+      }
+    ]
+  }
+}

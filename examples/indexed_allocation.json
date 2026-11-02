@@ -1,0 +1,36 @@
+{
+  "model": {
+    "model_id": "integer-allocation-example", "version": "1", "kind": "indexed_program",
+    "axes": {"b": [0, 1, 2], "s": [0, 1, 2]},
+    "inputs": ["b", "s", "need", "prob", "capacity", "on_hand"],
+    "parameters": ["available", "penalty", "unit_cost"],
+    "tables": {
+      "demand": {"axes": ["b", "s"], "column": "need"},
+      "probability": {"axes": ["s"], "column": "prob"},
+      "cap": {"axes": ["b"], "column": "capacity"},
+      "stock": {"axes": ["b"], "column": "on_hand"}
+    },
+    "scenario_axis": "s", "probability_table": "probability",
+    "decisions": {"allocation": {"axes": ["b"], "domain": "integer", "lower": 0, "upper": 6}},
+    "objective": {"sense": "minimize", "terms": [{"over": ["b", "s"], "expression": "probability[s] * (penalty * positive_part(demand[b,s] - stock[b] - allocation[b]) + unit_cost * allocation[b])"}]},
+    "constraints": [
+      {"expression": "SUM_OVER(b, allocation[b]) <= available"},
+      {"over": ["b"], "expression": "allocation[b] <= cap[b]"}
+    ]
+  },
+  "parameters": {"available": 7, "penalty": 4, "unit_cost": 1},
+  "dataset": {
+    "row_ids": ["0-0", "0-1", "0-2", "1-0", "1-1", "1-2", "2-0", "2-1", "2-2"],
+    "rows": [
+      {"b": 0, "s": 0, "need": 2, "prob": 0.2, "capacity": 4, "on_hand": 1},
+      {"b": 0, "s": 1, "need": 4, "prob": 0.5, "capacity": 4, "on_hand": 1},
+      {"b": 0, "s": 2, "need": 6, "prob": 0.3, "capacity": 4, "on_hand": 1},
+      {"b": 1, "s": 0, "need": 1, "prob": 0.2, "capacity": 5, "on_hand": 0},
+      {"b": 1, "s": 1, "need": 3, "prob": 0.5, "capacity": 5, "on_hand": 0},
+      {"b": 1, "s": 2, "need": 5, "prob": 0.3, "capacity": 5, "on_hand": 0},
+      {"b": 2, "s": 0, "need": 2, "prob": 0.2, "capacity": 3, "on_hand": 1},
+      {"b": 2, "s": 1, "need": 2, "prob": 0.5, "capacity": 3, "on_hand": 1},
+      {"b": 2, "s": 2, "need": 4, "prob": 0.3, "capacity": 3, "on_hand": 1}
+    ]
+  }
+}

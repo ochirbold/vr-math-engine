@@ -1,0 +1,86 @@
+{
+  "model": {
+    "model_id": "inscribed-ball-company",
+    "version": "1",
+    "kind": "linear_program",
+    "inputs": [
+      "price",
+      "cost",
+      "min_value",
+      "max_value"
+    ],
+    "parameters": [
+      "threshold"
+    ],
+    "formulas": [
+      {
+        "target": "margin",
+        "expression": "price - cost",
+        "stage": "row"
+      },
+      {
+        "target": "margin_norm",
+        "expression": "NORM(COLUMN('margin'))",
+        "stage": "aggregate"
+      },
+      {
+        "target": "center_value",
+        "expression": "center",
+        "stage": "post"
+      },
+      {
+        "target": "radius_value",
+        "expression": "radius",
+        "stage": "post"
+      }
+    ],
+    "decisions": {
+      "center": {
+        "size": "rows",
+        "lower": null
+      },
+      "radius": {
+        "lower": 0
+      }
+    },
+    "objective": {
+      "sense": "maximize",
+      "expression": "radius"
+    },
+    "constraints": [
+      "DOT(COLUMN('margin'), center) - radius * margin_norm >= threshold",
+      "-center + radius <= -COLUMN('min_value')",
+      "center + radius <= COLUMN('max_value')"
+    ]
+  },
+  "parameters": {
+    "threshold": 14000
+  },
+  "dataset": {
+    "row_ids": [
+      "product-1",
+      "product-2",
+      "product-3"
+    ],
+    "rows": [
+      {
+        "price": 700,
+        "cost": 280,
+        "min_value": 6.66,
+        "max_value": 26.66
+      },
+      {
+        "price": 1120,
+        "cost": 420,
+        "min_value": 4,
+        "max_value": 16
+      },
+      {
+        "price": 4480,
+        "cost": 2240,
+        "min_value": 1.25,
+        "max_value": 5
+      }
+    ]
+  }
+}

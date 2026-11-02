@@ -1,0 +1,51 @@
+x-common: &common
+  build: .
+  environment: &environment
+    SERVICE_TOKEN: ${SERVICE_TOKEN:?Set SERVICE_TOKEN in .env or environment}
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/health',headers={'X-Service-Token':os.environ['SERVICE_TOKEN']}),timeout=3)"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+services:
+  jobs:
+    <<: *common
+    command: ["uvicorn", "math_engine.services.jobs:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      <<: *environment
+      JOB_DB: /data/jobs.db
+    volumes: ["job-data:/data"]
+    ports: ["127.0.0.1:8100:8000"]
+  data:
+    <<: *common
+    command: ["uvicorn", "math_engine.services.data:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      <<: *environment
+      DATA_DB: /data/data.db
+    volumes: ["snapshot-data:/data"]
+    ports: ["127.0.0.1:8101:8000"]
+  compute:
+    <<: *common
+    mem_limit: 768m
+    cpus: 2
+    pids_limit: 128
+    ports: ["127.0.0.1:8102:8000"]
+  worker:
+    build: .
+    command: ["python", "-m", "math_engine.worker"]
+    restart: unless-stopped
+    environment:
+      <<: *environment
+      JOB_URL: http://jobs:8000
+      DATA_URL: http://data:8000
+      COMPUTE_URL: http://compute:8000
+    depends_on:
+      jobs: {condition: service_healthy}
+      data: {condition: service_healthy}
+      compute: {condition: service_healthy}
+
+volumes:
+  job-data:
+  snapshot-data:

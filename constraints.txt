@@ -1,0 +1,17 @@
+# Versions exercised by the local verification environment (Python 3.10).
+# Dependency ranges remain in pyproject.toml; use this file for reproducible installs.
+fastapi==0.135.1
+uvicorn==0.41.0
+pydantic==2.12.5
+numpy==2.2.6
+scipy==1.15.3
+starlette==0.52.1
+anyio==4.12.1
+idna==3.11
+typing_extensions==4.15.0
+typing-inspection==0.4.2
+annotated-types==0.7.0
+pydantic_core==2.41.5
+click==8.3.1
+h11==0.16.0
+annotated-doc==0.0.4

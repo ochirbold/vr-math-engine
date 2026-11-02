@@ -1,0 +1,20 @@
+{
+  "model": {
+    "model_id": "information-constrained-plan", "version": "1", "kind": "indexed_program",
+    "axes": {"t": [0, 1], "s": [0, 1]},
+    "inputs": ["t", "s", "need", "weight"],
+    "tables": {"target": {"axes": ["t", "s"], "column": "need"}, "probability": {"axes": ["s"], "column": "weight"}},
+    "scenario_axis": "s", "probability_table": "probability",
+    "decisions": {
+      "choice": {"axes": ["t", "s"], "domain": "integer", "lower": 0, "upper": 6,
+                 "information": [{"at": {"t": 0}, "groups": [[0, 1]]}, {"at": {"t": 1}, "groups": [[0], [1]]}]},
+      "shortfall": {"axes": ["t", "s"], "lower": 0, "upper": 6, "information": "scenario_specific"}
+    },
+    "objective": {"terms": [{"over": ["t", "s"], "expression": "probability[s] * (choice[t,s] + 10 * shortfall[t,s])"}]},
+    "constraints": [{"over": ["t", "s"], "expression": "choice[t,s] + shortfall[t,s] >= target[t,s]"}]
+  },
+  "dataset": {"row_ids": ["0-a", "0-b", "1-a", "1-b"], "rows": [
+    {"t": 0, "s": 0, "need": 1, "weight": 0.5}, {"t": 0, "s": 1, "need": 3, "weight": 0.5},
+    {"t": 1, "s": 0, "need": 2, "weight": 0.5}, {"t": 1, "s": 1, "need": 4, "weight": 0.5}
+  ]}
+}

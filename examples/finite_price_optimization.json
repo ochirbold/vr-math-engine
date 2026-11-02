@@ -1,0 +1,123 @@
+{
+  "model": {
+    "model_id": "finite-price-pair-example",
+    "version": "1",
+    "kind": "scenario_program",
+    "inputs": [
+      "competitor_A",
+      "competitor_B",
+      "available_A",
+      "available_B",
+      "stock_A",
+      "stock_B",
+      "cost_A",
+      "cost_B"
+    ],
+    "parameters": [
+      "intercept_A",
+      "intercept_B",
+      "elasticity_A",
+      "elasticity_B",
+      "cross_A",
+      "cross_B",
+      "competitor_coef",
+      "substitution_A",
+      "substitution_B",
+      "dispersion_A",
+      "dispersion_B"
+    ],
+    "decisions": {
+      "price_A": {
+        "values": [
+          6,
+          8,
+          10
+        ]
+      },
+      "price_B": {
+        "values": [
+          6,
+          8,
+          10
+        ]
+      }
+    },
+    "formulas": [
+      {
+        "target": "mean_A",
+        "expression": "exp(intercept_A - elasticity_A * log(price_A) + cross_A * log(price_B) + competitor_coef * log(competitor_A) + substitution_A * (1 - available_B))"
+      },
+      {
+        "target": "mean_B",
+        "expression": "exp(intercept_B - elasticity_B * log(price_B) + cross_B * log(price_A) + competitor_coef * log(competitor_B) + substitution_B * (1 - available_A))"
+      },
+      {
+        "target": "expected_sales_A",
+        "expression": "NB_CAPPED_MEAN(mean_A, dispersion_A, stock_A)"
+      },
+      {
+        "target": "expected_sales_B",
+        "expression": "NB_CAPPED_MEAN(mean_B, dispersion_B, stock_B)"
+      },
+      {
+        "target": "profit",
+        "expression": "(price_A-cost_A)*expected_sales_A + (price_B-cost_B)*expected_sales_B"
+      }
+    ],
+    "objective": {
+      "sense": "maximize",
+      "expression": "profit"
+    },
+    "constraints": [
+      "price_A >= cost_A",
+      "price_B >= cost_B"
+    ],
+    "reductions": {
+      "mean_A": {
+        "expression": "mean_A"
+      },
+      "mean_B": {
+        "expression": "mean_B"
+      },
+      "expected_sales_A": {
+        "expression": "expected_sales_A"
+      },
+      "expected_sales_B": {
+        "expression": "expected_sales_B"
+      },
+      "profit": {
+        "expression": "profit"
+      }
+    }
+  },
+  "parameters": {
+    "intercept_A": 6.966806716296367,
+    "intercept_B": 5.744764388662495,
+    "elasticity_A": 3,
+    "elasticity_B": 2.5,
+    "cross_A": 0.3,
+    "cross_B": 0.3,
+    "competitor_coef": 0.2,
+    "substitution_A": 0.2,
+    "substitution_B": 0.15,
+    "dispersion_A": 0.4,
+    "dispersion_B": 0.5
+  },
+  "dataset": {
+    "row_ids": [
+      "context"
+    ],
+    "rows": [
+      {
+        "competitor_A": 9,
+        "competitor_B": 9,
+        "available_A": 1,
+        "available_B": 1,
+        "stock_A": 5,
+        "stock_B": 3,
+        "cost_A": 2,
+        "cost_B": 2
+      }
+    ]
+  }
+}
