@@ -3,6 +3,13 @@
 Огноо: 2026-11-02. Хувилбар: 0.6.0.
 Эх үүсвэр: `math-engine-platform` бие даасан repository.
 
+## Үндсэн deployment-ийн шинэчлэлт
+
+Анхдагчаар зөвхөн хадгалалтгүй compute асна. Jobs/Data/Worker болон тэдний
+SQLite volume нь `--profile jobs` сонголтоор идэвхжинэ. Доорх дөрвөн сервис,
+DB-ийн тайлбар нь optional бүтэн стекд хамаарна.
+[Stateless deployment ба шилжилт](STATELESS_DEPLOYMENT.md).
+
 ## Дүгнэлт
 
 API ба job боловсруулах ажиллагаа локал HTTP орчинд баталгаажсан: хамгийн

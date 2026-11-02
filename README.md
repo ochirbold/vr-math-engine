@@ -8,7 +8,7 @@
 |---|---|
 | Хувилбар | **0.6.0** |
 | README шинэчилсэн | 2026-11-02 |
-| Сүүлийн бүрэн шалгалт | 2026-11-02: **201 тест давсан** (97.46 секунд); v0.6.0 интегралын API/job тест багтсан |
+| Сүүлийн бүрэн шалгалт | 2026-11-02: **202 тест давсан** (72.50 секунд); хадгалалтгүй compute шалгалт багтсан |
 | Баталгаажсан орчин | Локал Python 3.10, бодит localhost HTTP сервисүүд |
 | Байршуулалтын түвшин | Дотоод серверийн pilot-д шилжүүлэх суурь; target host шалгалт шаардлагатай |
 | Production статус | Docker build/run, хамгаалалт, ачаалал, backup/restore бүрэн баталгаажаагүй |
@@ -60,6 +60,15 @@ Calculation/LP урсгалын томьёо `row → aggregate → solve → po
 
 AST нь дурын Python/SQL ажиллуулахгүй. Үл мэдэгдэх нэр, хамаарлын цикл, буруу хэмжээ, NaN/Infinity болон NULL тоон оролтыг татгалзана. Функц бүр бүх backend-д адилхан зөвшөөрөгдөхгүй; runtime metadata-г `GET /v1/capabilities`-аас харна.
 
+## Үндсэн deployment: хадгалалтгүй Compute API
+
+Анхдагч `docker compose up --build -d` нь зөвхөн Compute API асаана.
+Оролт, үр дүн, job history-г SQLite-д хадгалахгүй; үр дүнг шууд буцаана.
+Дуудагч систем хадгалалт, retry, түүхээ хариуцна.
+
+Jobs/Data/Worker хэрэгтэй бол `docker compose --profile jobs up --build -d`
+ашиглана. [Deployment ба шилжилтийн заавар](docs/STATELESS_DEPLOYMENT.md).
+
 ## Архитектур
 
 | Бүрэлдэхүүн | Үүрэг | Локал порт |
@@ -96,14 +105,14 @@ python -m venv .venv
 
 CLI нь сервис болон Oracle шаардахгүй. Calculation жишээ `GRAND_TOTAL=435`, жижиг Profit жишээ `objective=22.3` буцаана.
 
-### 2. Локал API стек асаах
+### 2. Локал Compute API асаах
 
 ```powershell
 $env:SERVICE_TOKEN = (.\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(32))")
-.\.venv\Scripts\python.exe scripts/dev_stack.py
+.\.venv\Scripts\python.exe -m uvicorn math_engine.services.compute:app --host 127.0.0.1 --port 8102
 ```
 
-Өөр terminal-д **ижил token**-ийг environment-д тохируулсны дараа:
+Бүтэн jobs стек хэрэгтэй бол SQLite ашигладаг `scripts/dev_stack.py`-г асаана. Зөвхөн тэр стек ажиллаж байгаа үед өөр terminal-д **ижил token** тохируулж:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/demo_job.py calculation
@@ -124,7 +133,7 @@ Invoke-RestMethod -Method Post `
   -Headers $headers -ContentType 'application/json' -Body $body
 ```
 
-Серверийн ердийн интеграцад model → snapshot → job → status/result гэсэн асинхрон урсгалыг ашиглана. Шууд execution нь синхрон; client timeout-ийг compute-ийн 90 секундийн wall limit-тэй нийцүүлнэ.
+Үндсэн интеграц нь шууд execution дуудлага. Optional jobs profile нь model → snapshot → job → status/result гэсэн асинхрон урсгалтай. Шууд execution нь синхрон; client timeout-ийг compute-ийн 90 секундийн wall limit-тэй нийцүүлнэ.
 
 ## API лавлах
 
@@ -216,9 +225,9 @@ docker compose logs --tail=100
 Dockerfile нь `src/`, `pyproject.toml`, `constraints.txt`-ийг image-д хуулж package суулгана. Контейнер non-root хэрэглэгчээр ажиллана. Compose нь:
 
 - API портуудыг зөвхөн `127.0.0.1` дээр нийтэлнэ;
-- Jobs-д `job-data`, Data-д `snapshot-data` гэсэн тусдаа named volume ашиглана;
+- зөвхөн jobs profile-д Jobs/Data-ийн named volume ашиглана;
 - Compute-д 768 MB memory, 2 CPU, 128 PID хязгаар тавина;
-- API healthcheck болон worker-ийн startup dependency тохируулна.
+- API healthcheck, optional worker dependency, 10 MB × 3 log rotation тохируулна.
 
 **Docker CLI энэ шалгалтын орчинд байхгүй тул image build/run баталгаажаагүй.** Сервер дээрх smoke test, volume permission, restart/recovery, backup/restore заавал тусдаа шалгалт болно. `/health` нь DB writability эсвэл worker liveness шалгахгүй.
 

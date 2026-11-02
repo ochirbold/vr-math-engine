@@ -3,6 +3,11 @@ x-common: &common
   environment: &environment
     SERVICE_TOKEN: ${SERVICE_TOKEN:?Set SERVICE_TOKEN in .env or environment}
   restart: unless-stopped
+  logging: &logging
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
   healthcheck:
     test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/health',headers={'X-Service-Token':os.environ['SERVICE_TOKEN']}),timeout=3)"]
     interval: 10s
@@ -11,6 +16,7 @@ x-common: &common
 
 services:
   jobs:
+    profiles: ["jobs"]
     <<: *common
     command: ["uvicorn", "math_engine.services.jobs:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
@@ -19,6 +25,7 @@ services:
     volumes: ["job-data:/data"]
     ports: ["127.0.0.1:8100:8000"]
   data:
+    profiles: ["jobs"]
     <<: *common
     command: ["uvicorn", "math_engine.services.data:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
@@ -33,7 +40,9 @@ services:
     pids_limit: 128
     ports: ["127.0.0.1:8102:8000"]
   worker:
+    profiles: ["jobs"]
     build: .
+    logging: *logging
     command: ["python", "-m", "math_engine.worker"]
     restart: unless-stopped
     environment:
